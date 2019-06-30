@@ -1,5 +1,5 @@
 // input image location
-final String imageFile = "data/Butterfly.jpg";
+final String imageFile = "data/portrait.jpg";
 
 // input images in RGB and CIE Lab color space
 PImage originalRgb;
@@ -24,7 +24,7 @@ final float xdogParamKappa = 1.6f;
 // shifts the detection threshold, thereby controlling sensitivity (albeit on
 // an inverted scale: Smaller values make the edge detection more
 // sensitive, while large values decrease detection sensitivity).
-final float xdogParamEps = -25.0f;
+final float xdogParamEps = -15.0f;
 // changes the relative weighting between the larger and
 // smaller Gaussians, thereby affecting the tone-mapping response of
 // the operator.
@@ -33,6 +33,11 @@ final float xdogParamRho = 0.998f;
 //soft ramp between the edge and non-edge values, with parameter φ
 //controlling the steepness of this transition
 final float xdogParamPhi = 1.0f;
+
+// orientation aligned bilateral filter
+final float oabfSigma_d = 3.f;
+final float oabfSigma_r = 4.25f;
+final int oabfIterations = 5;
 
 /////////////////////////////////////////
 /////////////   Init  ///////////////////
@@ -89,6 +94,12 @@ void keyPressed()
   {
     displayedText = "DoG isotropic thresholding   ";   
     displayedImage = xdogThresholding(originalLab, 0).toPImage();
+  } else if (key == '5')
+  {
+    displayedText = "Orientation aligned bilateral filter";   
+    displayedImage = convert_Lab2srgb(
+      filterOrientationAlignedBilateral(
+      originalLab, edgeTangentFlow, oabfSigma_d, oabfSigma_r, oabfIterations)).toPImage();
   } 
 
   redraw();
@@ -142,7 +153,7 @@ FImage xdogSimpleThresholding(FImage input, int channel)
   {
     G0.data[i] = (G0.data[i] > 0.0) ? 1.0 : 0.0;
   }
-  
+
   return G0;
 }
 
@@ -154,6 +165,6 @@ FImage xdogThresholding(final FImage input, final int channel)
     float e = D.data[i];
     D.data[i] = (e < xdogParamEps) ? 1.0 : (1.0f + (float)java.lang.Math.tanh(xdogParamPhi * e));
   }
-  
+
   return D;
 }
