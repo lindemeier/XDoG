@@ -35,31 +35,24 @@ FImage convolveVertical1D(final FImage f, float[] kernel)
   final int h = f.height;
 
   FImage out = new FImage(w, h, f.channels); 
-  for (int y = 0; y < h; y++) {
-    for (int x = 0; x < w; x++) {        
-      PVector sum = new PVector(0.f, 0.f, 0.f);
+  for (int c = 0; c < f.channels; c++) 
+  {
+    for (int y = 0; y < h; y++) {
+      for (int x = 0; x < w; x++) {  
+        // center pixel
+        float sum = kernel[r] * f.getSingle(x, y, c);      
 
-      // center pixel
-      PVector center = f.get(x, y);
-      sum.x += kernel[r] * center.x;
-      sum.y += kernel[r] * center.y;
-      sum.z += kernel[r] * center.z;
+        // neighbor pixels
+        for (int i = 1; i <= r; ++i)    
+        {
+          float a = f.getSingle(x, f.border(y-i, h), c);
+          float b = f.getSingle(x, f.border(y+i, h), c);
 
-      // neighbor pixels
-      for (int i = 1; i <= r; ++i)    
-      {
-        PVector a = f.get(x, f.border(y-i, h));
-        PVector b = f.get(x, f.border(y+i, h));
-
-        sum.x += kernel[r+i] * b.x;  
-        sum.y += kernel[r+i] * b.y;  
-        sum.z += kernel[r+i] * b.z;  
-
-        sum.x += kernel[r-i] * a.x;  
-        sum.y += kernel[r-i] * a.y;  
-        sum.z += kernel[r-i] * a.z;
+          sum += kernel[r+i] * b; 
+          sum += kernel[r-i] * a;
+        }
+        out.setSingle(x, y, c, sum);
       }
-      out.set(x, y, sum);
     }
   }
   return out;
@@ -73,31 +66,26 @@ FImage convolveHorizontal1D(final FImage f, float[] kernel)
   final int h = f.height;
 
   FImage out = new FImage(w, h, f.channels); 
-  for (int y = 0; y < h; y++) {
-    for (int x = 0; x < w; x++) {        
-      PVector sum = new PVector(0.f, 0.f, 0.f);
+  for (int c = 0; c < f.channels; c++) 
+  {
+    for (int y = 0; y < h; y++) {
+      for (int x = 0; x < w; x++) {   
 
-      // center pixel
-      PVector center = f.get(x, y);
-      sum.x += kernel[r] * center.x;
-      sum.y += kernel[r] * center.y;
-      sum.z += kernel[r] * center.z;
+        // center pixel
+        float sum = kernel[r] * f.getSingle(x, y, c);
 
-      // neighbor pixels
-      for (int i = 1; i <= r; ++i)    
-      {
-        PVector a = f.get(f.border(x-i, w), y);
-        PVector b = f.get(f.border(x+i, w), y);
+        // neighbor pixels
+        for (int i = 1; i <= r; ++i)    
+        {
+          float a = f.getSingle(f.border(x-i, w), y, c);
+          float b = f.getSingle(f.border(x+i, w), y, c);
 
-        sum.x += kernel[r+i] * b.x;  
-        sum.y += kernel[r+i] * b.y;  
-        sum.z += kernel[r+i] * b.z;  
+          sum += kernel[r+i] * b;  
 
-        sum.x += kernel[r-i] * a.x;  
-        sum.y += kernel[r-i] * a.y;  
-        sum.z += kernel[r-i] * a.z;
+          sum += kernel[r-i] * a;  
+        }
+        out.setSingle(x, y, c, sum);
       }
-      out.set(x, y, sum);
     }
   }
   return out;

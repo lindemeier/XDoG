@@ -3,7 +3,7 @@ import java.lang.IllegalArgumentException;
 // floating point rgb
 class FImage
 {
-  private float[] data = null;
+  float[] data = null;
 
   int width, height;
   int channels;
@@ -55,6 +55,14 @@ class FImage
       data[index] = red(c) / 255.f;
       data[index+1] = green(c) / 255.f;
       data[index+2] = blue(c) / 255.f;
+    }
+  }
+
+  void mult(float s)
+  {
+    for (int i = 0; i < data.length; i++)
+    {
+      data[i] *= s;
     }
   }
 
@@ -164,5 +172,15 @@ class FImage
     while ( abs(pos) >= abs(axisLength) );
 
     return pos;
+  }
+
+  FImage extractChannel(int channel) 
+  {
+    FImage a = new FImage(this.width, this.height, 1);
+    for (int i = 0, k=0; i < data.length; i+=channels, k++)
+    {
+      a.data[k] = data[i+channel];
+    }
+    return a;
   }
 }

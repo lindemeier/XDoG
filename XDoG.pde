@@ -18,9 +18,21 @@ PImage displayedImage;
 final float tensorOuterSigma = 3.f;
 
 // standard deviation of the Gaussian blur
-final float xdogParamSigma = 3.0f;
+final float xdogParamSigma = 2.0f;
 // Differences of Gaussians factor
-final float xdogParamKappa = 3.0f;
+final float xdogParamKappa = 1.6f;
+// shifts the detection threshold, thereby controlling sensitivity (albeit on
+// an inverted scale: Smaller values make the edge detection more
+// sensitive, while large values decrease detection sensitivity).
+final float xdogParamEps = -25.0f;
+// changes the relative weighting between the larger and
+// smaller Gaussians, thereby affecting the tone-mapping response of
+// the operator.
+final float xdogParamRho = 0.998f;
+//creates an adjustable
+//soft ramp between the edge and non-edge values, with parameter φ
+//controlling the steepness of this transition
+final float xdogParamPhi = 1.0f;
 
 /////////////////////////////////////////
 /////////////   Init  ///////////////////
@@ -64,12 +76,19 @@ void keyPressed()
   if (key == '1')
   {
     displayedText = "input            "; 
-    //displayedImage = originalRgb;
-    displayedImage = GaussianBlur(new FImage(originalRgb), 15.0).toPImage();
+    displayedImage = originalRgb;
   } else if (key == '2')
   {
     displayedText = "edge tangent flow";   
     displayedImage = computeLineIntegralConvolution(edgeTangentFlow, 15.f).toPImage();
+  } else if (key == '3')
+  {
+    displayedText = "DoG isotropic simple threshold   ";   
+    displayedImage = xdogSimpleThresholding(originalLab, 0).toPImage();
+  } else if (key == '4')
+  {
+    displayedText = "DoG isotropic thresholding   ";   
+    displayedImage = xdogThresholding(originalLab, 0).toPImage();
   } 
 
   redraw();
@@ -96,8 +115,45 @@ FImage computeEdgeTangentFlow(final FImage input, final float tensorOuterSigma)
   return tfm;
 }
 
-FImage computeDoG(final FImage input, final float sigma, final float kappa)
+FImage computeDoGIsotropic(final FImage input, final float sigma, final float kappa, final float rho)
+{  
+  FImage G0 = GaussianBlur(input, sigma);
+  FImage G1 = GaussianBlur(input, kappa * sigma);
+
+  for (int i = 0; i < G0.data.length; i++)
+  {
+    G0.data[i] -= rho * G1.data[i];
+  }
+
+  return G0;
+}
+
+FImage xdogSimpleThresholding(FImage input, int channel)
 {
+  FImage G0 = GaussianBlur(input, xdogParamSigma);
+  FImage G1 = GaussianBlur(input, xdogParamKappa * xdogParamSigma);
+
+  for (int i = 0; i < G0.data.length; i++)
+  {
+    G0.data[i] -= G1.data[i];
+  }
+  G0 = G0.extractChannel(channel);
+  for (int i = 0; i < G0.data.length; i++)
+  {
+    G0.data[i] = (G0.data[i] > 0.0) ? 1.0 : 0.0;
+  }
   
-  return new FImage(input.width, input.height, 1);
+  return G0;
+}
+
+FImage xdogThresholding(final FImage input, final int channel)
+{
+  FImage D = computeDoGIsotropic(input, xdogParamSigma, xdogParamKappa, xdogParamRho).extractChannel(channel);
+  for (int i = 0; i < D.data.length; i++)
+  {
+    float e = D.data[i];
+    D.data[i] = (e < xdogParamEps) ? 1.0 : (1.0f + (float)java.lang.Math.tanh(xdogParamPhi * e));
+  }
+  
+  return D;
 }
