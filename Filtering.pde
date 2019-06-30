@@ -34,7 +34,7 @@ FImage convolveVertical1D(final FImage f, float[] kernel)
   final int w = f.width;
   final int h = f.height;
 
-  FImage out = new FImage(w, h); 
+  FImage out = new FImage(w, h, f.channels); 
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {        
       PVector sum = new PVector(0.f, 0.f, 0.f);
@@ -72,7 +72,7 @@ FImage convolveHorizontal1D(final FImage f, float[] kernel)
   final int w = f.width;
   final int h = f.height;
 
-  FImage out = new FImage(w, h); 
+  FImage out = new FImage(w, h, f.channels); 
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {        
       PVector sum = new PVector(0.f, 0.f, 0.f);

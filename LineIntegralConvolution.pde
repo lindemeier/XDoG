@@ -3,7 +3,7 @@ FImage computeLineIntegralConvolution(final FImage tfm, final float sigma)
 {
   final int w = tfm.width;
   final int h = tfm.height;
-  FImage out = new FImage(w, h); 
+  FImage out = new FImage(w, h, 1); 
 
   final float step = 1.;
 
@@ -68,9 +68,10 @@ FImage computeLineIntegralConvolution(final FImage tfm, final float sigma)
         c += gw * red(noise.get((int)x_, (int)y_));
         g+=gw;
       }
-      final float lambda = tfm.get(x, y).z;
-      color blend = lerpColor(color(c / g), color(255, 0, 0), lambda);
-      out.set(x, y, red(blend) / 255., green(blend) / 255, blue(blend) / 255);
+      //final float lambda = tfm.get(x, y).z;
+      //color blend = lerpColor(color(c / g), color(255, 0, 0), lambda);
+      //out.set(x, y, red(blend) / 255.f, green(blend) / 255.f, blue(blend) / 255.f);
+      out.setSingle(x, y, 0, (c / g) / 255.f);
     }
   }
 

@@ -8,7 +8,7 @@ FImage computeStructureTensors(final FImage img)
 
   PImage mag = createImage(w, h, RGB);
 
-  FImage tensors = new FImage(w, h); 
+  FImage tensors = new FImage(w, h, 3); 
   for (int y = 0; y < h; y++) 
   {
     for (int x = 0; x < w; x++) 
@@ -135,7 +135,7 @@ FImage computeTangentFlowMap(FImage tensors)
   final int w = tensors.width;
   final int h = tensors.height;
 
-  FImage tfm = new FImage(w, h); 
+  FImage tfm = new FImage(w, h, 322); 
   for (int y = 0; y < h; y++) 
   {
     for (int x = 0; x < w; x++) 

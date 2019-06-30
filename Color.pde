@@ -15,7 +15,7 @@ FImage convert_srgb2Lab(final FImage input)
   final int w = input.width;
   final int h = input.height;
 
-  FImage out = new FImage(w, h);
+  FImage out = new FImage(w, h, 3);
 
   float X, Y, Z;
 
@@ -73,7 +73,7 @@ FImage convert_Lab2srgb(final FImage input)
   final int w = input.width;
   final int h = input.height;
 
-  FImage out = new FImage(w, h);
+  FImage out = new FImage(w, h, 3);
 
   float X, Y, Z, r, g, b;
 
