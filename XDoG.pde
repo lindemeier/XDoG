@@ -5,9 +5,6 @@ final String imageFile = "data/portrait.jpg";
 PImage originalRgb;
 FImage originalLab;
 
-// edge tangent flow field
-FImage edgeTangentFlow;
-
 String displayedText = "input image";
 PImage displayedImage;
 
@@ -40,6 +37,16 @@ final float oabfSigma_r = 4.25f;
 final int oabfIterations = 5;
 
 /////////////////////////////////////////
+//////////  cached results //////////////
+/////////////////////////////////////////
+
+// edge tangent flow field
+FImage edgeTangentFlow;
+
+// DoG response
+FImage dogResponse;
+
+/////////////////////////////////////////
 /////////////   Init  ///////////////////
 /////////////////////////////////////////
 
@@ -58,6 +65,11 @@ void setup()
   originalLab = convert_srgb2Lab(sourceRGB);
 
   edgeTangentFlow = computeEdgeTangentFlow(sourceRGB, tensorOuterSigma); 
+
+  // 
+  dogResponse = new FImage(originalLab.width, originalLab.height, 1); 
+  fdogAlongGradient(
+    originalLab, dogResponse, edgeTangentFlow, xdogParamSigma, xdogParamKappa * xdogParamSigma, xdogParamTau);
 
   noLoop();
 }
@@ -88,32 +100,37 @@ void keyPressed()
     displayedImage = computeLineIntegralConvolution(edgeTangentFlow, 15.f).toPImage();
   } else if (key == '3')
   {
-    displayedText = "DoG isotropic simple threshold   ";   
-    displayedImage = xdogSimpleThresholding(originalLab, 0).toPImage();
+    displayedText = "DoG Response";   
+    displayedImage = dogResponse.toPImage();
   } else if (key == '4')
-  {
-    displayedText = "DoG isotropic thresholding   ";   
-    displayedImage = xdogThresholding(originalLab, 0).toPImage();
-  } else if (key == '5')
-  {
-    displayedText = "Orientation aligned bilateral filter";   
-    displayedImage = convert_Lab2srgb(
-      filterOrientationAlignedBilateral(
-      originalLab, edgeTangentFlow, oabfSigma_d, oabfSigma_r, oabfIterations)).toPImage();
-  } else if (key == '6')
   {
     displayedText = "Flow based DoG along gradient";   
     FImage dst = new FImage(originalLab.width, originalLab.height, 1); 
     fdogAlongGradient(
       originalLab, dst, edgeTangentFlow, xdogParamSigma, xdogParamKappa * xdogParamSigma, xdogParamTau);
     displayedImage = dst.toPImage();
-  } else if (key == '7')
+  } else if (key == '5')
   {
     displayedText = "Flow based DoG along flow";   
     FImage dst = new FImage(originalLab.width, originalLab.height, 1); 
     fdogAlongFlow(
       originalLab, dst, edgeTangentFlow, xdogParamSigma);
     displayedImage = dst.toPImage();
+  } else if (key == '6')
+  {
+    displayedText = "DoG simple thresholding   ";   
+    displayedImage = xdogSimpleThresholding(dogResponse).toPImage();
+  } else if (key == '7')
+  {
+    displayedText = "XDoG";   
+    displayedImage = 
+      xdogThresholding(dogResponse).toPImage();
+  } else if (key == '8')
+  {
+    displayedText = "Orientation aligned bilateral filter";   
+    displayedImage = convert_Lab2srgb(
+      filterOrientationAlignedBilateral(
+      originalLab, edgeTangentFlow, oabfSigma_d, oabfSigma_r, oabfIterations)).toPImage();
   } 
 
   redraw();
@@ -153,32 +170,25 @@ FImage computeDoGIsotropic(final FImage input, final float sigma, final float ka
   return G0;
 }
 
-FImage xdogSimpleThresholding(FImage input, int channel)
-{
-  FImage G0 = GaussianBlur(input, xdogParamSigma);
-  FImage G1 = GaussianBlur(input, xdogParamKappa * xdogParamSigma);
-
-  for (int i = 0; i < G0.data.length; i++)
+FImage xdogSimpleThresholding(FImage response)
+{  
+  FImage out = new FImage(response. width, response.height, 1);
+  for (int i = 0; i < response.data.length; i++)
   {
-    G0.data[i] -= G1.data[i];
-  }
-  G0 = G0.extractChannel(channel);
-  for (int i = 0; i < G0.data.length; i++)
-  {
-    G0.data[i] = (G0.data[i] > 0.0) ? 1.0 : 0.0;
+    out.data[i] = (response.data[i] > 0.0) ? 1.0 : 0.0;
   }
 
-  return G0;
+  return out;
 }
 
-FImage xdogThresholding(final FImage input, final int channel)
-{
-  FImage D = computeDoGIsotropic(input, xdogParamSigma, xdogParamKappa, xdogParamTau).extractChannel(channel);
-  for (int i = 0; i < D.data.length; i++)
+FImage xdogThresholding(final FImage response)
+{  
+  FImage out = new FImage(response. width, response.height, 1);
+  for (int i = 0; i < response.data.length; i++)
   {
-    float e = D.data[i];
-    D.data[i] = (e < xdogParamEps) ? 1.0 : (1.0f + (float)java.lang.Math.tanh(xdogParamPhi * e));
+    float e = response.data[i];
+    out.data[i] = (e < xdogParamEps) ? 1.0 : (1.0f + (float)java.lang.Math.tanh(xdogParamPhi * e));
   }
 
-  return D;
+  return out;
 }
