@@ -37,6 +37,10 @@ final float oabfSigma_d = 3.f;
 final float oabfSigma_r = 4.25f;
 final int oabfIterations = 5;
 
+// quantization
+final float phi_q = 3.4f;
+final int nbins = 6;
+
 /////////////////////////////////////////
 //////////  cached results //////////////
 /////////////////////////////////////////
@@ -117,7 +121,16 @@ void keyPressed()
     displayedImage = convert_Lab2srgb(
       filterOrientationAlignedBilateral(
       originalLab, edgeTangentFlow, oabfSigma_d, oabfSigma_r, oabfIterations)).toPImage();
+  } else if (key == '7')
+  {
+    displayedText = "Color quantization ";   
+    displayedImage = convert_Lab2srgb(quantize(originalLab, nbins, phi_q)).toPImage();
+  } else if (key == '8')
+  {
+    displayedText = "Composition of orientation aligned";   
+    displayedImage = convert_Lab2srgb(quantize(originalLab, nbins, phi_q)).toPImage();
   } 
+ 
 
   redraw();
 }
