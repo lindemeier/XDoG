@@ -30,6 +30,7 @@ final float xdogParamTau = 0.998f;
 //soft ramp between the edge and non-edge values, with parameter φ
 //controlling the steepness of this transition
 final float xdogParamPhi = 1.0f;
+final float xdogParamSmoothingSigma = 3.0f;
 
 // orientation aligned bilateral filter
 final float oabfSigma_d = 3.f;
@@ -67,9 +68,8 @@ void setup()
   edgeTangentFlow = computeEdgeTangentFlow(sourceRGB, tensorOuterSigma); 
 
   // 
-  dogResponse = new FImage(originalLab.width, originalLab.height, 1); 
-  fdogAlongGradient(
-    originalLab, dogResponse, edgeTangentFlow, xdogParamSigma, xdogParamKappa * xdogParamSigma, xdogParamTau);
+  dogResponse = computefDoG( //<>//
+    originalLab, edgeTangentFlow, xdogParamSigma, xdogParamKappa * xdogParamSigma, xdogParamTau, xdogParamSmoothingSigma);
 
   noLoop();
 }
@@ -104,28 +104,14 @@ void keyPressed()
     displayedImage = dogResponse.toPImage();
   } else if (key == '4')
   {
-    displayedText = "Flow based DoG along gradient";   
-    FImage dst = new FImage(originalLab.width, originalLab.height, 1); 
-    fdogAlongGradient(
-      originalLab, dst, edgeTangentFlow, xdogParamSigma, xdogParamKappa * xdogParamSigma, xdogParamTau);
-    displayedImage = dst.toPImage();
-  } else if (key == '5')
-  {
-    displayedText = "Flow based DoG along flow";   
-    FImage dst = new FImage(originalLab.width, originalLab.height, 1); 
-    fdogAlongFlow(
-      originalLab, dst, edgeTangentFlow, xdogParamSigma);
-    displayedImage = dst.toPImage();
-  } else if (key == '6')
-  {
     displayedText = "DoG simple thresholding   ";   
     displayedImage = xdogSimpleThresholding(dogResponse).toPImage();
-  } else if (key == '7')
+  } else if (key == '5')
   {
     displayedText = "XDoG";   
     displayedImage = 
       xdogThresholding(dogResponse).toPImage();
-  } else if (key == '8')
+  } else if (key == '6')
   {
     displayedText = "Orientation aligned bilateral filter";   
     displayedImage = convert_Lab2srgb(

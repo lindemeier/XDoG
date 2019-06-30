@@ -20,54 +20,54 @@ FImage computeStructureTensors(final FImage img)
       PVector dy = new PVector();
 
       dx.x = (
-        -1.0 * img.get(uv.x - d.x, uv.y - d.y).x +
-        -2.0 * img.get(uv.x - d.x, uv.y).x + 
-        -1.0 * img.get(uv.x - d.x, uv.y + d.y).x +
-        +1.0 * img.get(uv.x + d.x, uv.y - d.y).x +
-        +2.0 * img.get(uv.x + d.x, uv.y).x + 
-        +1.0 * img.get(uv.x + d.x, uv.y + d.y).x
+        -1.0 * img.getInterpolated(uv.x - d.x, uv.y - d.y).x +
+        -2.0 * img.getInterpolated(uv.x - d.x, uv.y).x + 
+        -1.0 * img.getInterpolated(uv.x - d.x, uv.y + d.y).x +
+        +1.0 * img.getInterpolated(uv.x + d.x, uv.y - d.y).x +
+        +2.0 * img.getInterpolated(uv.x + d.x, uv.y).x + 
+        +1.0 * img.getInterpolated(uv.x + d.x, uv.y + d.y).x
         ) / 4.0;
       dx.y = (
-        -1.0 * img.get(uv.x - d.x, uv.y - d.y).y +
-        -2.0 * img.get(uv.x - d.x, uv.y).y + 
-        -1.0 * img.get(uv.x - d.x, uv.y + d.y).y +
-        +1.0 * img.get(uv.x + d.x, uv.y - d.y).y +
-        +2.0 * img.get(uv.x + d.x, uv.y).y + 
-        +1.0 * img.get(uv.x + d.x, uv.y + d.y).y
+        -1.0 * img.getInterpolated(uv.x - d.x, uv.y - d.y).y +
+        -2.0 * img.getInterpolated(uv.x - d.x, uv.y).y + 
+        -1.0 * img.getInterpolated(uv.x - d.x, uv.y + d.y).y +
+        +1.0 * img.getInterpolated(uv.x + d.x, uv.y - d.y).y +
+        +2.0 * img.getInterpolated(uv.x + d.x, uv.y).y + 
+        +1.0 * img.getInterpolated(uv.x + d.x, uv.y + d.y).y
         ) / 4.0;
       dx.z = (
-        -1.0 * img.get(uv.x - d.x, uv.y - d.y).z +
-        -2.0 * img.get(uv.x - d.x, uv.y).z + 
-        -1.0 * img.get(uv.x - d.x, uv.y + d.y).z +
-        +1.0 * img.get(uv.x + d.x, uv.y - d.y).z +
-        +2.0 * img.get(uv.x + d.x, uv.y).z + 
-        +1.0 * img.get(uv.x + d.x, uv.y + d.y).z
+        -1.0 * img.getInterpolated(uv.x - d.x, uv.y - d.y).z +
+        -2.0 * img.getInterpolated(uv.x - d.x, uv.y).z + 
+        -1.0 * img.getInterpolated(uv.x - d.x, uv.y + d.y).z +
+        +1.0 * img.getInterpolated(uv.x + d.x, uv.y - d.y).z +
+        +2.0 * img.getInterpolated(uv.x + d.x, uv.y).z + 
+        +1.0 * img.getInterpolated(uv.x + d.x, uv.y + d.y).z
         ) / 4.0;
 
 
       dy.x = (
-        -1.0 * img.get(uv.x - d.x, uv.y - d.y).x +
-        -2.0 * img.get(uv.x, uv.y - d.y).x + 
-        -1.0 * img.get(uv.x + d.x, uv.y - d.y).x +
-        +1.0 * img.get(uv.x - d.x, uv.y + d.y).x +
-        +2.0 * img.get(uv.x, uv.y + d.y).x + 
-        +1.0 * img.get(uv.x + d.x, uv.y + d.y).x
+        -1.0 * img.getInterpolated(uv.x - d.x, uv.y - d.y).x +
+        -2.0 * img.getInterpolated(uv.x, uv.y - d.y).x + 
+        -1.0 * img.getInterpolated(uv.x + d.x, uv.y - d.y).x +
+        +1.0 * img.getInterpolated(uv.x - d.x, uv.y + d.y).x +
+        +2.0 * img.getInterpolated(uv.x, uv.y + d.y).x + 
+        +1.0 * img.getInterpolated(uv.x + d.x, uv.y + d.y).x
         ) / 4.0;
       dy.y = (
-        -1.0 * img.get(uv.x - d.x, uv.y - d.y).y +
-        -2.0 * img.get(uv.x, uv.y - d.y).y + 
-        -1.0 * img.get(uv.x + d.x, uv.y - d.y).y +
-        +1.0 * img.get(uv.x - d.x, uv.y + d.y).y +
-        +2.0 * img.get(uv.x, uv.y + d.y).y + 
-        +1.0 * img.get(uv.x + d.x, uv.y + d.y).y
+        -1.0 * img.getInterpolated(uv.x - d.x, uv.y - d.y).y +
+        -2.0 * img.getInterpolated(uv.x, uv.y - d.y).y + 
+        -1.0 * img.getInterpolated(uv.x + d.x, uv.y - d.y).y +
+        +1.0 * img.getInterpolated(uv.x - d.x, uv.y + d.y).y +
+        +2.0 * img.getInterpolated(uv.x, uv.y + d.y).y + 
+        +1.0 * img.getInterpolated(uv.x + d.x, uv.y + d.y).y
         ) / 4.0;
       dy.z = (
-        -1.0 * img.get(uv.x - d.x, uv.y - d.y).z +
-        -2.0 * img.get(uv.x, uv.y - d.y).z + 
-        -1.0 * img.get(uv.x + d.x, uv.y - d.y).z +
-        +1.0 * img.get(uv.x - d.x, uv.y + d.y).z +
-        +2.0 * img.get(uv.x, uv.y + d.y).z + 
-        +1.0 * img.get(uv.x + d.x, uv.y + d.y).z
+        -1.0 * img.getInterpolated(uv.x - d.x, uv.y - d.y).z +
+        -2.0 * img.getInterpolated(uv.x, uv.y - d.y).z + 
+        -1.0 * img.getInterpolated(uv.x + d.x, uv.y - d.y).z +
+        +1.0 * img.getInterpolated(uv.x - d.x, uv.y + d.y).z +
+        +2.0 * img.getInterpolated(uv.x, uv.y + d.y).z + 
+        +1.0 * img.getInterpolated(uv.x + d.x, uv.y + d.y).z
         ) / 4.0;
 
 

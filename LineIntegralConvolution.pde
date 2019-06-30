@@ -32,7 +32,9 @@ FImage computeLineIntegralConvolution(final FImage tfm, final float sigma)
       // forward 
       for (int i = 0; i < l/2; i++)
       {       
-        PVector v1 = tfm.get(x_, y_);
+        PVector v1 = new PVector(tfm.getSingleInterpolated(x_, y_, 0), 
+          tfm.getSingleInterpolated(x_, y_, 1), 
+          tfm.getSingleInterpolated(x_, y_, 2));
 
         if (v1.dot(v0) < 0.f) v1.mult(-1);
 
@@ -53,7 +55,9 @@ FImage computeLineIntegralConvolution(final FImage tfm, final float sigma)
       // backward 
       for (int i = 0; i < l/2; i++)
       {       
-        PVector v1 = tfm.get(x_, y_).mult(-1);
+        PVector v1 = new PVector(tfm.getSingleInterpolated(x_, y_, 0), 
+          tfm.getSingleInterpolated(x_, y_, 1), 
+          tfm.getSingleInterpolated(x_, y_, 2)).mult(-1);
 
         if (v1.dot(v0) < 0.f) v1.mult(-1);
 

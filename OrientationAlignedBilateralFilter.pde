@@ -25,7 +25,9 @@ void run_oabf(int pass, final FImage sourceLab, FImage target, final FImage tfm,
     for (int x = 0; x < w; x++) 
     {        
       final PVector uv = new PVector(x, y, 0.f);
-      final PVector tangent = tfm.get(uv.x, uv.y);
+      final PVector tangent = new PVector(tfm.getSingleInterpolated(uv.x, uv.y, 0), 
+        tfm.getSingleInterpolated(uv.x, uv.y, 1), 
+        tfm.getSingleInterpolated(uv.x, uv.y, 2));
       PVector t = (pass == 0) ? new PVector(tangent.y, -tangent.x, 0.f) : tangent;    
 
       if (abs(t.x) >= abs(t.y))
@@ -40,7 +42,9 @@ void run_oabf(int pass, final FImage sourceLab, FImage target, final FImage tfm,
         t.z = 0;
       }      
 
-      final PVector center = sourceLab.get(uv.x, uv.y);
+      final PVector center = new PVector(sourceLab.getSingleInterpolated(uv.x, uv.y, 0), 
+        sourceLab.getSingleInterpolated(uv.x, uv.y, 1), 
+        sourceLab.getSingleInterpolated(uv.x, uv.y, 2));
       PVector sum = new PVector();
       sum.x = center.x;
       sum.y = center.y;
@@ -58,8 +62,12 @@ void run_oabf(int pass, final FImage sourceLab, FImage target, final FImage tfm,
         final float uxp = uv.x - d * t.x;
         final float uyp = uv.y - d * t.y;
 
-        PVector c0 = sourceLab.get(uxn, uyn);
-        PVector c1 = sourceLab.get(uxp, uyp);
+        PVector c0 = new PVector(sourceLab.getSingleInterpolated(uxn, uyn, 0), 
+          sourceLab.getSingleInterpolated(uxn, uyn, 1), 
+          sourceLab.getSingleInterpolated(uxn, uyn, 2));
+        PVector c1 = new PVector(sourceLab.getSingleInterpolated(uxp, uyp, 0), 
+          sourceLab.getSingleInterpolated(uxp, uyp, 1), 
+          sourceLab.getSingleInterpolated(uxp, uyp, 2));
 
         float e0 = sqrt(pow(c0.x-center.x, 2.f) + pow(c0.y-center.y, 2.f) + pow(c0.z-center.z, 2.f));
         float e1 = sqrt(pow(c1.x-center.x, 2.f) + pow(c1.y-center.y, 2.f) + pow(c1.z-center.z, 2.f));

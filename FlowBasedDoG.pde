@@ -1,3 +1,17 @@
+FImage computefDoG(final FImage img, FImage tfm, 
+  final float sigma_e, final float sigma_r, final float tau, final float sigmaSmoothing)
+{
+  FImage out = new FImage(img. width, img.height, 1);
+
+  // compute DoG
+  fdogAlongGradient(img, out, tfm, sigma_e, sigma_r, tau);
+  // smooth along etf
+  FImage outSmooth = new FImage(img. width, img.height, 1);
+  smoothAlongFlow(out, outSmooth, tfm, sigmaSmoothing);
+
+  return out;
+}
+
 void fdogAlongGradient(final FImage img, FImage dst, FImage tfm, 
   final float sigma_e, final float sigma_r, final float tau)
 {
@@ -25,10 +39,10 @@ void fdogAlongGradient(final FImage img, FImage dst, FImage tfm,
         n.y = 1.f;
         n.z = 0;
       }    
-      final PVector ht = img.get(uv.x, uv.y);
-      
-      float sumG0 = ht.x;
-      float sumG1 = ht.x;
+      final float ht = img.getSingleInterpolated(uv.x, uv.y, 0);
+
+      float sumG0 = ht;
+      float sumG1 = ht;
       float normG0 = 1.0;
       float normG1 = 1.0;
 
@@ -41,14 +55,11 @@ void fdogAlongGradient(final FImage img, FImage dst, FImage tfm,
         normG0 += 2.0 * kernel[0];
         normG1 += 2.0 * kernel[1];
 
-        PVector backwardsValue =  img.get(uv.x - d*n.x, uv.y - d*n.y);
-        PVector forwardsValue =  img.get(uv.x + d*n.x, uv.y + d*n.y);  
-        
-        //float accumValues = backwardsValue.x + backwardsValue.y + backwardsValue.z 
-        //  + forwardsValue.x + forwardsValue.y + forwardsValue.z;
-        
+        float backwardsValue =  img.getSingleInterpolated(uv.x - d*n.x, uv.y - d*n.y, 0);
+        float forwardsValue =  img.getSingleInterpolated(uv.x + d*n.x, uv.y + d*n.y, 0);  
+
         // only Luminance used
-        float accumValues = backwardsValue.x + forwardsValue.x;
+        float accumValues = backwardsValue + forwardsValue;
 
         sumG0 += kernel[0] * accumValues;
         sumG1 += kernel[1] * accumValues;
@@ -62,7 +73,7 @@ void fdogAlongGradient(final FImage img, FImage dst, FImage tfm,
   }
 }
 
-void fdogAlongFlow(final FImage img, FImage dst, FImage tfm, 
+void smoothAlongFlow(final FImage img, FImage dst, FImage tfm, 
   final float sigma_m)
 {
   final float twoSigmaMSquared = 2.0 * sigma_m * sigma_m;
@@ -76,7 +87,7 @@ void fdogAlongFlow(final FImage img, FImage dst, FImage tfm,
     {
       final PVector uv = new PVector(x, y, 0.f);
       float wg = 1.0;
-      float H = img.get(x, y).x;
+      float H = img.getSingle(x, y, 0);
 
       lic_t a = new lic_t(), b = new lic_t();
       a.p.x = b.p.x = uv.x;
@@ -90,14 +101,14 @@ void fdogAlongFlow(final FImage img, FImage dst, FImage tfm,
       {
         step(tfm, a);
         float k = a.dw * exp(-a.w * a.w / twoSigmaMSquared); // TODO check a.dw
-        H += k * img.get(a.p.x, a.p.y).x;
+        H += k * img.getSingleInterpolated(a.p.x, a.p.y, 0);
         wg += k;
       }
       while (b.w < halfWidth) 
       {
         step(tfm, b);
         float k = b.dw * exp(-b.w * b.w / twoSigmaMSquared); // TODO check b.dw
-        H += k * img.get(b.p.x, b.p.y).x;
+        H += k * img.getSingleInterpolated(b.p.x, b.p.y, 0);
         wg += k;
       }
       H /= wg;
@@ -114,7 +125,9 @@ float sign(float x)
 
 void step(final FImage tfm, lic_t s) 
 {
-  PVector t = tfm.get(s.p.x, s.p.y);
+  PVector t = new PVector(tfm.getSingleInterpolated(s.p.x, s.p.y, 0), 
+    tfm.getSingleInterpolated(s.p.x, s.p.y, 1), 
+    tfm.getSingleInterpolated(s.p.x, s.p.y, 2));
   if (t.dot(s.t) < 0.0) t.mult(-1);
   s.t.x = t.x;
   s.t.y = t.y;

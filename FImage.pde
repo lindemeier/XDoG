@@ -28,11 +28,11 @@ class FImage
     }
   }
 
-  FImage(int w, int h, int channels)
+  FImage(int w, int h, int nChannels)
   {
     this.width = w;
     this.height = h;
-    this.channels = channels;
+    this.channels = nChannels;
     data = new float[w*h*channels];
   }
 
@@ -96,7 +96,8 @@ class FImage
 
   private float getSingle(int x, int y, int c)
   {
-    if (c >= channels) {
+    if (c >= channels) 
+    {
       throw new IllegalArgumentException("channel mismatch");
     }
     return data[channels*(y*this.width+x)+c];
@@ -115,7 +116,7 @@ class FImage
   }
 
   // bilinear interpolation
-  PVector get(float xp, float yp)
+  float getSingleInterpolated(float xp, float yp, int channel)
   {
     final int x = floor(xp);
     final int y = floor(yp);
@@ -128,14 +129,16 @@ class FImage
     final float a = xp - (float)(x);
     final float c = yp - (float)(y);
 
-    PVector r = new PVector();
-    r.x = (getSingle(x0, y0, 0) * (1.f - a) + getSingle(x1, y0, 0) * a) * (1.f - c)
-      + (getSingle(x0, y1, 0) * (1.f - a) + getSingle(x1, y1, 0) * a) * c;
-    r.y = (getSingle(x0, y0, 1) * (1.f - a) + getSingle(x1, y0, 1) * a) * (1.f - c)
-      + (getSingle(x0, y1, 1) * (1.f - a) + getSingle(x1, y1, 1) * a) * c;
-    r.z = (getSingle(x0, y0, 2) * (1.f - a) + getSingle(x1, y0, 2) * a) * (1.f - c)
-      + (getSingle(x0, y1, 2) * (1.f - a) + getSingle(x1, y1, 2) * a) * c;
-    return r;
+    return (getSingle(x0, y0, channel) * (1.f - a) + getSingle(x1, y0, channel) * a) * (1.f - c)
+      + (getSingle(x0, y1, channel) * (1.f - a) + getSingle(x1, y1, channel) * a) * c;
+  }
+
+  // bilinear interpolation
+  PVector getInterpolated(float xp, float yp)
+  {
+    return  new PVector(getSingleInterpolated(xp, yp, 0), 
+      getSingleInterpolated(xp, yp, 1), 
+      getSingleInterpolated(xp, yp, 2));
   }
 
   void set(int x, int y, float r, float g, float b)
