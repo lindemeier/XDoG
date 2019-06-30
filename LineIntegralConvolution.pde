@@ -3,7 +3,7 @@ FImage computeLineIntegralConvolution(final FImage tfm, final float sigma)
 {
   final int w = tfm.width;
   final int h = tfm.height;
-  FImage out = new FImage(w, h, 1); 
+  FImage out = new FImage(w, h, 3); 
 
   final float step = 1.;
 
@@ -75,9 +75,36 @@ FImage computeLineIntegralConvolution(final FImage tfm, final float sigma)
       //final float lambda = tfm.get(x, y).z;
       //color blend = lerpColor(color(c / g), color(255, 0, 0), lambda);
       //out.set(x, y, red(blend) / 255.f, green(blend) / 255.f, blue(blend) / 255.f);
-      out.setSingle(x, y, 0, (c / g) / 255.f);
+      out.set(x, y, (c / g) / 255.f, (c / g) / 255.f, (c / g) / 255.f);
     }
   }
 
   return out;
+}
+
+void drawArrows(final FImage tfm)
+{
+  final int w = tfm.width;
+  final int h = tfm.height;
+
+  final int cs = 15;
+  final int o = 5;
+  
+  pushStyle();
+
+  stroke(0, 255, 0);
+  for (int y = 0; y < h; y+=cs) 
+  {    
+    for (int x = 0; x < w; x+=cs) 
+    {        
+      PVector v = tfm.get(x, y);
+      final int r = (cs-1)/2;
+      final int cx = x + r;
+      final int cy = y + r;
+
+      line(cx - o*v.x, cy - o*v.y, cx + o*v.x, cy + o*v.y);
+    }
+  }
+  
+  popStyle();
 }

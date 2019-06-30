@@ -15,7 +15,7 @@ PImage displayedImage;
 final float tensorOuterSigma = 3.f;
 
 // standard deviation of the Gaussian blur
-final float xdogParamSigma = 2.0f;
+final float xdogParamSigma = 3.0f;
 // Differences of Gaussians factor
 final float xdogParamKappa = 1.6f;
 // shifts the detection threshold, thereby controlling sensitivity (albeit on
@@ -108,7 +108,9 @@ void keyPressed()
   } else if (key == '2')
   {
     displayedText = "edge tangent flow";   
-    displayedImage = computeLineIntegralConvolution(edgeTangentFlow, 15.f).toPImage();
+    FImage lic = computeLineIntegralConvolution(edgeTangentFlow, 10.f);
+    drawArrows(lic);
+    displayedImage = lic.toPImage();  
   } else if (key == '3')
   {
     displayedText = "DoG Response";   
