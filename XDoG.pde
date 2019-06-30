@@ -28,7 +28,7 @@ final float xdogParamEps = -15.0f;
 // changes the relative weighting between the larger and
 // smaller Gaussians, thereby affecting the tone-mapping response of
 // the operator.
-final float xdogParamRho = 0.998f;
+final float xdogParamTau = 0.998f;
 //creates an adjustable
 //soft ramp between the edge and non-edge values, with parameter φ
 //controlling the steepness of this transition
@@ -100,6 +100,13 @@ void keyPressed()
     displayedImage = convert_Lab2srgb(
       filterOrientationAlignedBilateral(
       originalLab, edgeTangentFlow, oabfSigma_d, oabfSigma_r, oabfIterations)).toPImage();
+  } else if (key == '6')
+  {
+    displayedText = "Flow based DoG";   
+    FImage dst = new FImage(originalLab.width, originalLab.height, 3); 
+    run_fdog_0(
+      originalLab, dst, edgeTangentFlow, xdogParamSigma, xdogParamKappa * xdogParamSigma, xdogParamTau);
+    displayedImage = dst.toPImage();
   } 
 
   redraw();
@@ -126,14 +133,14 @@ FImage computeEdgeTangentFlow(final FImage input, final float tensorOuterSigma)
   return tfm;
 }
 
-FImage computeDoGIsotropic(final FImage input, final float sigma, final float kappa, final float rho)
+FImage computeDoGIsotropic(final FImage input, final float sigma, final float kappa, final float tau)
 {  
   FImage G0 = GaussianBlur(input, sigma);
   FImage G1 = GaussianBlur(input, kappa * sigma);
 
   for (int i = 0; i < G0.data.length; i++)
   {
-    G0.data[i] -= rho * G1.data[i];
+    G0.data[i] -= tau * G1.data[i];
   }
 
   return G0;
@@ -159,7 +166,7 @@ FImage xdogSimpleThresholding(FImage input, int channel)
 
 FImage xdogThresholding(final FImage input, final int channel)
 {
-  FImage D = computeDoGIsotropic(input, xdogParamSigma, xdogParamKappa, xdogParamRho).extractChannel(channel);
+  FImage D = computeDoGIsotropic(input, xdogParamSigma, xdogParamKappa, xdogParamTau).extractChannel(channel);
   for (int i = 0; i < D.data.length; i++)
   {
     float e = D.data[i];
