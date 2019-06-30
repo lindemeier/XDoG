@@ -48,8 +48,12 @@ final int nbins = 6;
 // edge tangent flow field
 FImage edgeTangentFlow;
 
+// bilateral filter applied
+FImage oabfFiltered;
+
 // DoG response
 FImage dogResponse;
+
 
 /////////////////////////////////////////
 /////////////   Init  ///////////////////
@@ -70,10 +74,13 @@ void setup()
   originalLab = convert_srgb2Lab(sourceRGB);
 
   edgeTangentFlow = computeEdgeTangentFlow(sourceRGB, tensorOuterSigma); 
+  
+  oabfFiltered = filterOrientationAlignedBilateral(
+      originalLab, edgeTangentFlow, oabfSigma_d, oabfSigma_r, oabfIterations);
 
   // 
   dogResponse = computefDoG( //<>//
-    originalLab, edgeTangentFlow, xdogParamSigma, xdogParamKappa * xdogParamSigma, xdogParamTau, xdogParamSmoothingSigma);
+    oabfFiltered, edgeTangentFlow, xdogParamSigma, xdogParamKappa * xdogParamSigma, xdogParamTau, xdogParamSmoothingSigma);
 
   noLoop();
 }
@@ -118,17 +125,18 @@ void keyPressed()
   } else if (key == '6')
   {
     displayedText = "Orientation aligned bilateral filter";   
-    displayedImage = convert_Lab2srgb(
-      filterOrientationAlignedBilateral(
-      originalLab, edgeTangentFlow, oabfSigma_d, oabfSigma_r, oabfIterations)).toPImage();
+    displayedImage = convert_Lab2srgb(oabfFiltered).toPImage();
   } else if (key == '7')
   {
     displayedText = "Color quantization ";   
-    displayedImage = convert_Lab2srgb(quantize(originalLab, nbins, phi_q)).toPImage();
+    displayedImage = convert_Lab2srgb(quantize(oabfFiltered, nbins, phi_q)).toPImage();
   } else if (key == '8')
   {
-    displayedText = "Composition of orientation aligned";   
-    displayedImage = convert_Lab2srgb(quantize(originalLab, nbins, phi_q)).toPImage();
+    displayedText = "Composition of orientation aligned bilateral filter and xDoG thresholding";   
+
+    FImage xdog = xdogThresholding(dogResponse);  
+      
+    displayedImage = overlay(xdog, convert_Lab2srgb(oabfFiltered)).toPImage();
   } 
  
 
@@ -190,4 +198,23 @@ FImage xdogThresholding(final FImage response)
   }
 
   return out;
+}
+
+FImage overlay(final FImage edges, final FImage img)
+{
+  final int w = edges.width;
+  final int h = edges.height;
+
+  FImage t0 = new FImage(w, h, img.channels);  
+  for (int y = 0; y < h; y++) 
+  {    
+    for (int x = 0; x < w; x++) 
+    {
+      PVector c = img.get(x, y);
+      float e = edges.getSingle(x, y, 0);
+      t0.set(x, y, e*c.x, e*c.y, e*c.z);
+    }
+  }
+
+  return t0;
 }
