@@ -1,4 +1,4 @@
-void run_fdog_0(final FImage img, FImage dst, FImage tfm, 
+void fdogAlongGradient(final FImage img, FImage dst, FImage tfm, 
   final float sigma_e, final float sigma_r, final float tau)
 {
   final float twoSigmaESquared = 2.0 * sigma_e * sigma_e;
@@ -26,8 +26,11 @@ void run_fdog_0(final FImage img, FImage dst, FImage tfm,
         n.z = 0;
       }    
       final PVector ht = img.get(uv.x, uv.y);
-      PVector sum = new PVector(ht.x, ht.x, 0.f);
-      PVector norm = new PVector(1.0, 1.0, 0.f);
+      
+      float sumG0 = ht.x;
+      float sumG1 = ht.x;
+      float normG0 = 1.0;
+      float normG1 = 1.0;
 
       float halfWidth = 2.0 * sigma_r / sqrt(n.x*n.x+n.y*n.y);
       for (int d = 1; d <= halfWidth; d++) 
@@ -35,29 +38,32 @@ void run_fdog_0(final FImage img, FImage dst, FImage tfm,
         // kernel for both gaussians
         float[] kernel = new float[]{exp( -d * d / twoSigmaESquared), 
           exp( -d * d / twoSigmaRSquared)};
-        norm.x += 2.0 * kernel[0];
-        norm.y += 2.0 * kernel[1];
+        normG0 += 2.0 * kernel[0];
+        normG1 += 2.0 * kernel[1];
 
-        PVector L0 =  img.get(uv.x - d*n.x, uv.y - d*n.y);
-        PVector L1 =  img.get(uv.x + d*n.x, uv.y + d*n.y);  
-        L0.y = L0.x;
-        L1.y = L1.x;
+        PVector backwardsValue =  img.get(uv.x - d*n.x, uv.y - d*n.y);
+        PVector forwardsValue =  img.get(uv.x + d*n.x, uv.y + d*n.y);  
+        
+        //float accumValues = backwardsValue.x + backwardsValue.y + backwardsValue.z 
+        //  + forwardsValue.x + forwardsValue.y + forwardsValue.z;
+        
+        // only Luminance used
+        float accumValues = backwardsValue.x + forwardsValue.x;
 
-        sum.x += kernel[0] * ( L0.x + L1.x);
-        sum.y += kernel[1] * ( L0.y + L1.y);
+        sumG0 += kernel[0] * accumValues;
+        sumG1 += kernel[1] * accumValues;
       }
-      sum.x /= norm.x;
-      sum.y /= norm.y;
+      sumG0 /= normG0;
+      sumG1 /= normG1;
 
       // DoG operation
-      float diff = (sum.x - tau * sum.y);
-      dst.set(x, y, diff, diff, diff);
+      dst.setSingle(x, y, 0, (sumG0 - tau * sumG1));
     }
   }
 }
 
-void run_fdog_1(final FImage img, FImage dst, FImage tfm, 
-  final float sigma_m, final float phi)
+void fdogAlongFlow(final FImage img, FImage dst, FImage tfm, 
+  final float sigma_m)
 {
   final float twoSigmaMSquared = 2.0 * sigma_m * sigma_m;
   final float halfWidth = 2.0 * sigma_m;
@@ -96,8 +102,7 @@ void run_fdog_1(final FImage img, FImage dst, FImage tfm,
       }
       H /= wg;
 
-      float edge = ( H > 0.0 )? 1.0 : 2.0 * smoothstep(-2.0, 2.0, phi * H );
-      dst.set(x, y, edge, edge, edge);
+      dst.setSingle(x, y, 0, H);
     }
   }
 }
@@ -121,12 +126,6 @@ void step(final FImage tfm, lic_t s)
   s.p.x += t.x * s.dw;
   s.p.y += t.y * s.dw;
   s.w += s.dw;
-}
-
-float smoothstep(final float edge0, final float edge1, final float x)
-{
-  float t = constrain((x - edge0) / (edge1 - edge0), 0.0, 1.0);
-  return t * t * (3.0 - 2.0 * t);
 }
 
 class lic_t 

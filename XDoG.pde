@@ -102,10 +102,17 @@ void keyPressed()
       originalLab, edgeTangentFlow, oabfSigma_d, oabfSigma_r, oabfIterations)).toPImage();
   } else if (key == '6')
   {
-    displayedText = "Flow based DoG";   
-    FImage dst = new FImage(originalLab.width, originalLab.height, 3); 
-    run_fdog_0(
+    displayedText = "Flow based DoG along gradient";   
+    FImage dst = new FImage(originalLab.width, originalLab.height, 1); 
+    fdogAlongGradient(
       originalLab, dst, edgeTangentFlow, xdogParamSigma, xdogParamKappa * xdogParamSigma, xdogParamTau);
+    displayedImage = dst.toPImage();
+  } else if (key == '7')
+  {
+    displayedText = "Flow based DoG along flow";   
+    FImage dst = new FImage(originalLab.width, originalLab.height, 1); 
+    fdogAlongFlow(
+      originalLab, dst, edgeTangentFlow, xdogParamSigma);
     displayedImage = dst.toPImage();
   } 
 
